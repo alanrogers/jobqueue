@@ -14,6 +14,7 @@
  * Systems Consortium License, which can be found in file "LICENSE".
  */
 
+#include "jobqueue.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -21,13 +22,10 @@
 #include <stdbool.h>
 #include <time.h>
 
-#include "misc.h"
-#include "jobqueue.h"
-
 #undef DPRINTF_ON
 #include "dprintf.h"
 #ifdef DPRINTF_ON
-extern pthread_mutex_t outputLock;
+pthread_mutex_t outputLock = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
 #undef ERR
