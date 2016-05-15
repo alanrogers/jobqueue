@@ -27,12 +27,9 @@ lib := -L/usr/local/lib -lgsl -lgslcblas -lpthread -lm
 	$(CC) $(CFLAGS) $(incl) -c -o ${@F}  $<
 
 # test jobqueue.c
-XJOBQUEUE := xjobqueue.o misc.o 
+XJOBQUEUE := xjobqueue.o jobqueue.o
 xjobqueue : $(XJOBQUEUE)
 	$(CC) $(CFLAGS) -o $@ $(XJOBQUEUE) $(lib)
-
-xjobqueue.o : jobqueue.c jobqueue.h
-	$(CC) $(CFLAGS) -c -DTEST -o $@ jobqueue.c
 
 # Make dependencies file
 depend : *.c *.h
