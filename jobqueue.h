@@ -41,8 +41,6 @@ typedef struct JobQueue JobQueue;
 JobQueue   *JobQueue_new(int nthreads);
 void        JobQueue_addJob(JobQueue * jq, int (*jobfun) (void *),
                             void *param);
-void        JobQueue_addTask(JobQueue * jq, int (*taskfun) (void *),
-                             void *param);
 void        JobQueue_waitOnJobs(JobQueue * jq);
 void        JobQueue_free(JobQueue * jq);
 #endif
