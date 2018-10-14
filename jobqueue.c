@@ -1,3 +1,4 @@
+
 /**
  * @file jobqueue.c
  * @author Alan R. Rogers
@@ -50,19 +51,19 @@ typedef struct Job Job;
 /// A single job in the queue
 struct Job {
     struct Job *next;           // next job in queue
-    void       *param;          // data for current job
-    int         (*jobfun) (void *param, void *tdat);    // function that does job
+    void *param;                // data for current job
+    int (*jobfun) (void *param, void *tdat);    // function that does job
 };
 
 /// All data used by job queue
 struct JobQueue {
 
-    Job        *todo;           // list of jobs
-    bool        acceptingJobs;  // false => don't wait for work
-    int         maxThreads;     // maxumum number of threads
-    int         nThreads;       // current number of threads
-    int         idle;           // number of idle threads
-    int         valid;          // has JobQueue been initialized
+    Job *todo;                  // list of jobs
+    bool acceptingJobs;         // false => don't wait for work
+    int maxThreads;             // maxumum number of threads
+    int nThreads;               // current number of threads
+    int idle;                   // number of idle threads
+    int valid;                  // has JobQueue been initialized
     pthread_attr_t attr;        // create detached threads
     pthread_mutex_t lock;       // for locking queue
     pthread_cond_t wakeWorker;  // for waking workers
@@ -75,9 +76,9 @@ struct JobQueue {
     // random number generator, which is used sequentially by all
     // tasks executed by that thread, but is only allocated and freed
     // once.
-    void       *threadData;     // constructor argument; not locally owned
-    void       *(*ThreadState_new) (void *threadData);  // constuctor
-    void        (*ThreadState_free) (void *threadState);    // destructor
+    void *threadData;           // constructor argument; not locally owned
+    void *(*ThreadState_new) (void *threadData);    // constuctor
+    void (*ThreadState_free) (void *threadState);   // destructor
 };
 
 #define JOBQUEUE_VALID 8131950
@@ -86,10 +87,10 @@ struct JobQueue {
 pthread_mutex_t stdoutLock = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
-void       *threadfun(void *varg);
-void        Job_free(Job * job);
+void *threadfun(void *varg);
+void Job_free(Job * job);
 #ifdef DPRINTF_ON
-void        Job_print(Job * job);
+void Job_print(Job * job);
 
 void Job_print(Job * job) {
     if(job == NULL) {
@@ -101,11 +102,11 @@ void Job_print(Job * job) {
 }
 #endif
 
-JobQueue   *JobQueue_new(int maxThreads, void *threadData,
-                         void *(*ThreadState_new) (void *),
-                         void (*ThreadState_free) (void *)) {
-    int         i;
-    JobQueue   *jq = malloc(sizeof(JobQueue));
+JobQueue *JobQueue_new(int maxThreads, void *threadData,
+                       void *(*ThreadState_new) (void *),
+                       void (*ThreadState_free) (void *)) {
+    int i;
+    JobQueue *jq = malloc(sizeof(JobQueue));
     CHECKMEM(jq);
 
     jq->todo = NULL;
@@ -129,7 +130,7 @@ JobQueue   *JobQueue_new(int maxThreads, void *threadData,
     }
 
     if((i = pthread_mutex_init(&jq->lock, NULL))) {
-        fprintf(stderr,"%s:%d: pthread_mutex_init returned %d (%s)",
+        fprintf(stderr, "%s:%d: pthread_mutex_init returned %d (%s)",
                 __FILE__, __LINE__, i, strerror(i));
         exit(1);
     }
@@ -155,11 +156,12 @@ void JobQueue_addJob(JobQueue * jq, int (*jobfun) (void *, void *),
                      void *param) {
     assert(jq);
 
-    int         status;
-    pthread_t   id;
+    int status;
+    pthread_t id;
 
     if(jq->valid != JOBQUEUE_VALID) {
-        fprintf(stderr, "%s:%d: JobQueue not initialized", __func__, __LINE__);
+        fprintf(stderr, "%s:%d: JobQueue not initialized", __func__,
+                __LINE__);
         exit(1);
     }
 
@@ -169,7 +171,7 @@ void JobQueue_addJob(JobQueue * jq, int (*jobfun) (void *, void *),
         exit(1);
     }
 
-    Job        *job = malloc(sizeof(Job));
+    Job *job = malloc(sizeof(Job));
     CHECKMEM(job);
     job->jobfun = jobfun;
     job->param = param;
@@ -219,14 +221,14 @@ void JobQueue_addJob(JobQueue * jq, int (*jobfun) (void *, void *),
  * it, then waits for another.  Runs until jobs are completed and
  * main thread sets acceptingJobs=0.
  */
-void       *threadfun(void *arg) {
+void *threadfun(void *arg) {
     DPRINTF(("%s %lu entry\n", __func__, (unsigned long) pthread_self()));
 
     //    struct timespec timeout;
-    JobQueue   *jq = (JobQueue *) arg;
-    Job        *job;
-    int         status;
-    void       *threadState = NULL;
+    JobQueue *jq = (JobQueue *) arg;
+    Job *job;
+    int status;
+    void *threadState = NULL;
     if(jq->ThreadState_new != NULL) {
         threadState = jq->ThreadState_new(jq->threadData);
         CHECKMEM(threadState);
@@ -325,12 +327,13 @@ void       *threadfun(void *arg) {
 
 /// Stop accepting jobs
 void JobQueue_noMoreJobs(JobQueue * jq) {
-    int         status;
+    int status;
 
     DPRINTF(("%s:%d: entry\n", __func__, __LINE__));
 
     if(jq->valid != JOBQUEUE_VALID) {
-        fprintf(stderr, "%s:%d: JobQueue not initialized", __func__, __LINE__);
+        fprintf(stderr, "%s:%d: JobQueue not initialized", __func__,
+                __LINE__);
         exit(1);
     }
 
@@ -361,12 +364,13 @@ void JobQueue_noMoreJobs(JobQueue * jq) {
 
 /// Wait until all threads are idle
 void JobQueue_waitOnJobs(JobQueue * jq) {
-    int         status;
+    int status;
 
     DPRINTF(("%s:%d: entry\n", __func__, __LINE__));
 
     if(jq->valid != JOBQUEUE_VALID) {
-        fprintf(stderr, "%s:%d: JobQueue not initialized", __func__, __LINE__);
+        fprintf(stderr, "%s:%d: JobQueue not initialized", __func__,
+                __LINE__);
         exit(1);
     }
 
@@ -425,11 +429,12 @@ void JobQueue_free(JobQueue * jq) {
     assert(jq);
 
     if(jq->valid != JOBQUEUE_VALID) {
-        fprintf(stderr, "%s:%d: JobQueue not initialized", __func__, __LINE__);
+        fprintf(stderr, "%s:%d: JobQueue not initialized", __func__,
+                __LINE__);
         exit(1);
     }
 
-    int         status;
+    int status;
 
     JobQueue_noMoreJobs(jq);
     JobQueue_waitOnJobs(jq);

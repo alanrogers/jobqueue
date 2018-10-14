@@ -1,3 +1,4 @@
+
 /**
  * @file xjobqueue.c
  * @author Alan R. Rogers
@@ -18,11 +19,11 @@
 #endif
 
 typedef struct {
-    double      arg, result;
+    double arg, result;
 } TstParam;
 
 typedef struct {
-	int i;
+    int i;
 } ThreadState;
 
 void *ThreadState_new(void *dat);
@@ -34,26 +35,26 @@ static void unitTstResult(const char *facility, const char *result) {
 }
 
 void *ThreadState_new(void *dat) {
-	ThreadState *ts = malloc(sizeof *ts);
-    if(ts==NULL) {
-        fprintf(stderr,"%s:%d: bad malloc\n", __FILE__,__LINE__);
+    ThreadState *ts = malloc(sizeof *ts);
+    if(ts == NULL) {
+        fprintf(stderr, "%s:%d: bad malloc\n", __FILE__, __LINE__);
         exit(1);
     }
 
-	int *ip = (int *) dat;
-	ts->i = *ip;
-	return (void *) ts;
+    int *ip = (int *) dat;
+    ts->i = *ip;
+    return (void *) ts;
 }
 
 void ThreadState_free(void *self) {
-	free(self);
+    free(self);
 }
 
-int jobfunc(void *p, void * tdat);
+int jobfunc(void *p, void *tdat);
 
-int jobfunc(void *p, void * tdat) {
-    TstParam   *param = (TstParam *) p;
-	ThreadState *ts = (ThreadState *) tdat;
+int jobfunc(void *p, void *tdat) {
+    TstParam *param = (TstParam *) p;
+    ThreadState *ts = (ThreadState *) tdat;
 
     param->result = (param->arg) * ts->i;
 
@@ -62,7 +63,7 @@ int jobfunc(void *p, void * tdat) {
 
 int main(int argc, char **argv) {
 
-    int         verbose = 0;
+    int verbose = 0;
 
     switch (argc) {
     case 1:
@@ -79,13 +80,13 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    int         i, njobs = 6, nthreads = 3;
-    TstParam    jobs[njobs];
-	int         multiplier = 3;
-    JobQueue   *jq = JobQueue_new(nthreads,
-								  &multiplier,
-								  ThreadState_new,
-								  ThreadState_free);
+    int i, njobs = 6, nthreads = 3;
+    TstParam jobs[njobs];
+    int multiplier = 3;
+    JobQueue *jq = JobQueue_new(nthreads,
+                                &multiplier,
+                                ThreadState_new,
+                                ThreadState_free);
 
     for(i = 0; i < njobs; ++i) {
         jobs[i].arg = i + 1.0;
